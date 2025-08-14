@@ -31,7 +31,7 @@ The table below summarizes the operating systems and architectures on which this
 Clone this repository and build using the provided `Makefile`:
 
 ````bash
-git https://github.com/valerio-afk/gc.git
+git clone https://github.com/valerio-afk/gc.git
 cd gc
 make
 ````
