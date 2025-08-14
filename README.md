@@ -5,8 +5,6 @@ Supports **x86 (32 & 64-bit)** and **ARM (32 & 64-bit)** architectures.
 
 This library provides automatic memory management for C programs, scanning memory regions such as the stack, heap, data, and BSS sections. It also supports register scanning on supported architectures.
 
----
-
 ## Features
 
 - Portable across x86 and ARM, both 32-bit and 64-bit.
@@ -15,9 +13,8 @@ This library provides automatic memory management for C programs, scanning memor
 - Exposes both **static (`libgc.a`)** and **shared (`libgc.so`)** libraries.
 - Simple API to allocate, free, and manage memory with garbage collection.
 
----
 
-### Tested Platforms
+## Tested Platforms
 
 The table below summarizes the operating systems and architectures on which this garbage collector has been tested:
 
@@ -28,8 +25,6 @@ The table below summarizes the operating systems and architectures on which this
 | Windows          | ❌         | ❌         | ❌         | ❌         |
 
 **Note:** Other platforms may work but have not been tested. Use at your own discretion.
-
----
 
 ## Installation
 
