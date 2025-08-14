@@ -21,7 +21,7 @@ The table below summarizes the operating systems and architectures on which this
 | OS / Architecture | x86 32-bit | x86 64-bit | ARM 32-bit | ARM 64-bit |
 |------------------|------------|------------|------------|------------|
 | Linux            | ❌         | ❌         | ✅         | ✅         |
-| macOS            | ❌         | ❌         | ❌         | ❌         |
+| macOS            | ❌         | ❌         | ❌         | ✅         |
 | Windows          | ❌         | ❌         | ❌         | ❌         |
 
 **Note:** Other platforms may work but have not been tested. Use at your own discretion.

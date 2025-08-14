@@ -82,8 +82,12 @@
         #define PROC_MAPS "/proc/self/maps"
 
     #elif defined(__APPLE__) && defined(__MACH__)
+        #include <mach/mach.h>
+        #include <mach/mach_vm.h>
         #include <mach-o/getsect.h>
         #include <mach-o/dyld.h>
+
+
 
         /*
         _gc_macos_get_data_section
@@ -454,6 +458,8 @@ void gc_free(gc_state*state, void*ptr)
 */
 void gc_mark (gc_state*state,void *start, void *end, bool check_tags)
 {
+    if ((start==end) && (end == NULL)) return;
+    
     end-=sizeof(void*);
     while (start <=end)
     {
@@ -497,7 +503,7 @@ void gc_mark (gc_state*state,void *start, void *end, bool check_tags)
 void *gc_stack_base() 
 {
     
-  #ifdef _MSC_VER
+  #ifdef _WIN32
     void* stackFrames[5] = { 0 };
     USHORT framesCaptured = RtlCaptureStackBackTrace(0, 5, stackFrames, NULL);
 
@@ -509,7 +515,13 @@ void *gc_stack_base()
     }
 
     return NULL;
-  #elif defined(__GNUC__) || defined(__clang__)
+  #elif defined(__APPLE__) || defined(__MACH__)
+    //size_t stack_size = pthread_get_stacksize_np(pthread_self());
+    void *stack_base = pthread_get_stackaddr_np(pthread_self());
+
+    return stack_base; //(void*) ((char *) stack_base + stack_size);
+
+  #elif defined(__linux__)
     pthread_attr_t attr;
     void *stack_addr;
     size_t stack_size;
