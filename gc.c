@@ -784,3 +784,88 @@ void * gc_current_stack_top()
         return (void *)gp_registers.ARCH_REG_STACK_POINTER;
     #endif
 }
+void gc_print_state(gc_state * state)
+{
+    unsigned int columns_width[]={
+        SIZE_T_MAX_DIGITS+2,
+        SIZE_T_MAX_DIGITS,
+        SIZE_T_MAX_DIGITS+2
+    };
+
+    char *headings[]={
+        "Pointer",
+        "Size",
+        "Reachable at"
+    };
+
+    int columns =(sizeof(headings)/sizeof(void*));
+
+    for (int i=0;i<columns;i++)
+    {
+        unsigned int l = strlen(headings[i]);
+        if (columns_width[i]<l) columns_width[i] = l;
+    }
+
+    int hline_s = columns_width[0]+columns_width[1]+columns_width[2]+11;
+
+    char * hline = malloc(hline_s);
+    char * row = malloc(hline_s);
+    
+    
+    memset(hline,'-',hline_s);
+    memset(row,'\0',hline_s);
+    hline[hline_s-1] = '\0';
+
+    puts(hline);
+
+    for (int i=0;i<columns;i++)
+    {
+        char * c = malloc(columns_width[i]+1);
+        if (i==0)strcat(row,"| ");
+        sprintf(c,"%-*s",columns_width[i],headings[i]);
+        strcat(row, c);
+        if (i<(columns-1))strcat(row," | ");
+        else strcat(row," |");
+        free(c);
+    }
+    puts(row);
+    puts(hline);
+
+    gc_entry *e = state->head;
+
+    while (e!=NULL)
+    {
+        char * reachable = malloc(columns_width[2]+1);
+        memset(reachable,'\0',columns_width[2]+1);
+
+        if (e->reach_addr == NULL)
+        {
+            strcpy(reachable,"Registers");
+        }
+        else
+        {
+            sprintf(reachable,"0x%0*zx", columns_width[2]-2,(size_t)e->reach_addr);
+        }
+
+        printf("| 0x%0*zx | %-*zu | %-*s |\n",
+            columns_width[0]-2,
+            (size_t)e->ptr,
+            columns_width[1],
+            e->size,
+            columns_width[2],
+            reachable
+        );
+        free(reachable);
+
+        e = e->next;
+    }
+
+    if (state->head == NULL)
+    {
+        printf("| %-*s |\n",hline_s-5,"No allocations");
+    }
+
+    puts(hline);
+    free(row);
+    free(hline);
+}

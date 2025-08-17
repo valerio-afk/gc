@@ -196,10 +196,14 @@ int main()
 
     printf("\nTest immediate unreachable\n");
     gc_alloc(state,1024,true);
+
     gc_collect(state);
     printf("If sweeping appeared, all is good!\n");
 
-    printf("\n\nTest over - no sweeps beyond this point\n");
+    printf("\n\nTest over - no sweeps beyond this point\n\n");
+
+    gc_print_state(state);
+    printf("If any allocations are present, they will be free'd in destroy\n");
 
     gc_destroy(state);
     return 0;

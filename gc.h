@@ -31,6 +31,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <limits.h>
 
 #define GC_TAG_ENTRY "___GC__ENTRY___"
 #define GC_TAG_STATE "___GC__STATE___"
@@ -45,6 +46,8 @@
 #define GC_SCAN_ALL_GLOBALS (GC_SCAN_DATA_SECTION | GC_SCAN_BSS_SECTION)
 #define GC_SCAN_ALL_MEMORY (GC_SCAN_STACK | GC_SCAN_HEAPS | GC_SCAN_ALL_GLOBALS )
 #define GC_SCAN_EVERYTHING (GC_SCAN_ALL_MEMORY | GC_SCAN_REGISTERS)
+
+#define SIZE_T_MAX_DIGITS ((sizeof(size_t) * CHAR_BIT * 302) / 1000 + 1)
 
 /*
   This struct maintains information regarding an allocation
@@ -343,6 +346,7 @@ void gc_sweep(gc_state*);
 void *gc_stack_base();
 void gc_data_section(void**,void**);
 void gc_bss_section(void**,void**);
+void gc_print_state(gc_state*);
 memory_region * gc_heap_regions(size_t *);
 
 #endif

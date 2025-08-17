@@ -110,6 +110,7 @@ The flag(s) used for the initialisation specify what memory areas the garbage co
 | `void gc_data_section(void**, void**);` | `start` and `end` pointers to data section | Populates start/end addresses of the `.data` section. |
 | `void gc_bss_section(void**, void**);` | `start` and `end` pointers to BSS section | Populates start/end addresses of the `.bss` section. |
 | `memory_region* gc_heap_regions(size_t*);` | `count` — returns number of heap regions | Returns an array of memory regions representing the heap(s) for scanning. |
+| `gc_print_state(gc_state *)` | `state` — GC instance | Print a table with current allocations managed by the GC. |
 
 #### Notes
 
