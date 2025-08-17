@@ -784,6 +784,7 @@ void * gc_current_stack_top()
         return (void *)gp_registers.ARCH_REG_STACK_POINTER;
     #endif
 }
+
 void gc_print_state(gc_state * state)
 {
     unsigned int columns_width[]={
