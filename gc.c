@@ -460,18 +460,25 @@ void gc_mark (gc_state*state,void *start, void *end, bool check_tags)
 {
     if ((start==end) && (end == NULL)) return;
     
-    end-=sizeof(void*);
-    while (start <=end)
+    //end-=sizeof(void*);
+    while (start<end)
     {
+        if (check_tags)
+        {
+            if (gc_memcmp(start,GC_TAG_STATE,sizeof(GC_TAG_STATE)))
+            {
+                start += sizeof(gc_state);
+                continue;
+            }
+            else if (gc_memcmp(start,GC_TAG_ENTRY,sizeof(GC_TAG_ENTRY)))
+            {
+                start += sizeof(gc_entry);
+                continue;
+            }
+        }
         gc_entry *e = state->head;
         while(e!=NULL)
         {
-            if (check_tags)
-            {
-                if (gc_memcmp(start,GC_TAG_STATE,sizeof(GC_TAG_STATE))) start += sizeof(gc_state) -1;
-                else if (gc_memcmp(start,GC_TAG_ENTRY,sizeof(GC_TAG_ENTRY))) start += sizeof(gc_entry) -1;
-                
-            }
             if ((e->ptr == *(void**)(start)) && (e->reachable == false))
             {
                 e->reachable = true;
