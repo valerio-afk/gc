@@ -46,6 +46,8 @@
 #define GC_SCAN_ALL_GLOBALS (GC_SCAN_DATA_SECTION | GC_SCAN_BSS_SECTION)
 #define GC_SCAN_ALL_MEMORY (GC_SCAN_STACK | GC_SCAN_HEAPS | GC_SCAN_ALL_GLOBALS )
 #define GC_SCAN_EVERYTHING (GC_SCAN_ALL_MEMORY | GC_SCAN_REGISTERS)
+#define GC_SCAN_ALL_MEMORY_EXCEPT_HEAPS (GC_SCAN_ALL_MEMORY & ~GC_SCAN_HEAPS)
+#define GC_SCAN_EVERYTHING_EXCEPT_HEAPS (GC_SCAN_EVERYTHING & ~GC_SCAN_HEAPS)
 
 #define SIZE_T_MAX_DIGITS ((sizeof(size_t) * CHAR_BIT * 302) / 1000 + 1)
 
@@ -115,30 +117,34 @@ typedef struct {
 
 #define ARCH_REG_STACK_POINTER esp
 
-#define SAVE_GP_REGISTERS()               \
-    __asm__ __volatile__ (               \
-        "movl %%eax, %0\n\t"             \
-        "movl %%ebx, %1\n\t"             \
-        "movl %%ecx, %2\n\t"             \
-        "movl %%edx, %3\n\t"             \
-        "movl %%esi, %4\n\t"             \
-        "movl %%edi, %5\n\t"             \
-        "movl %%ebp, %6\n\t"             \
-        "movl %%esp, %7\n\t"             \
-        : "=m"(gp_registers.eax),        \
-          "=m"(gp_registers.ebx),        \
-          "=m"(gp_registers.ecx),        \
-          "=m"(gp_registers.edx),        \
-          "=m"(gp_registers.esi),        \
-          "=m"(gp_registers.edi),        \
-          "=m"(gp_registers.ebp),        \
-          "=m"(gp_registers.esp)         \
-        :                                 \
-        :                                 \
-    )
+#define SAVE_GP_REGISTERS()                 \
+    do {                                    \
+        uint32_t tmp_esp, tmp_ebp;      \
+        __asm__ __volatile__ (              \
+            "movl %%eax, %0\n\t"           \
+            "movl %%ebx, %1\n\t"           \
+            "movl %%ecx, %2\n\t"           \
+            "movl %%edx, %3\n\t"           \
+            "movl %%esi, %4\n\t"           \
+            "movl %%edi, %5\n\t"           \
+            : "=m"(gp_registers.eax),      \
+              "=m"(gp_registers.ebx),      \
+              "=m"(gp_registers.ecx),      \
+              "=m"(gp_registers.edx),      \
+              "=m"(gp_registers.esi),      \
+              "=m"(gp_registers.edi)       \
+            :                               \
+            : "memory");                    \
+        __asm__ ("movl %%esp, %0" : "=r"(tmp_esp)); \
+        __asm__ ("movl %%ebp, %0" : "=r"(tmp_ebp)); \
+        gp_registers.esp = tmp_esp;        \
+        gp_registers.ebp = tmp_ebp;        \
+    } while (0)
+
 
 // x86-64
 #elif defined(__x86_64__)
+
 typedef struct {
     uint64_t rax;
     uint64_t rbx;
@@ -160,43 +166,48 @@ typedef struct {
 
 #define ARCH_REG_STACK_POINTER  rsp
 
-#define SAVE_GP_REGISTERS()                       \
-    __asm__ __volatile__ (                        \
-        "movq %%rax, %0\n\t"                      \
-        "movq %%rbx, %1\n\t"                      \
-        "movq %%rcx, %2\n\t"                      \
-        "movq %%rdx, %3\n\t"                      \
-        "movq %%rsi, %4\n\t"                      \
-        "movq %%rdi, %5\n\t"                      \
-        "movq %%rbp, %6\n\t"                      \
-        "movq %%rsp, %7\n\t"                      \
-        "movq %%r8,  %8\n\t"                       \
-        "movq %%r9,  %9\n\t"                       \
-        "movq %%r10, %10\n\t"                      \
-        "movq %%r11, %11\n\t"                      \
-        "movq %%r12, %12\n\t"                      \
-        "movq %%r13, %13\n\t"                      \
-        "movq %%r14, %14\n\t"                      \
-        "movq %%r15, %15\n\t"                      \
-        : "=m"(gp_registers.rax),                 \
-          "=m"(gp_registers.rbx),                 \
-          "=m"(gp_registers.rcx),                 \
-          "=m"(gp_registers.rdx),                 \
-          "=m"(gp_registers.rsi),                 \
-          "=m"(gp_registers.rdi),                 \
-          "=m"(gp_registers.rbp),                 \
-          "=m"(gp_registers.rsp),                 \
-          "=m"(gp_registers.r8),                  \
-          "=m"(gp_registers.r9),                  \
-          "=m"(gp_registers.r10),                 \
-          "=m"(gp_registers.r11),                 \
-          "=m"(gp_registers.r12),                 \
-          "=m"(gp_registers.r13),                 \
-          "=m"(gp_registers.r14),                 \
-          "=m"(gp_registers.r15)                  \
-        :                                          \
-        :                                          \
-    )
+#define SAVE_GP_REGISTERS()                                \
+    do {                                                   \
+        long tmp_rsp, tmp_rbp;                             \
+        __asm__ __volatile__ (                             \
+            "movq %%rax, %0\n\t"                           \
+            "movq %%rbx, %1\n\t"                           \
+            "movq %%rcx, %2\n\t"                           \
+            "movq %%rdx, %3\n\t"                           \
+            "movq %%rsi, %4\n\t"                           \
+            "movq %%rdi, %5\n\t"                           \
+            "movq %%r8,  %6\n\t"                           \
+            "movq %%r9,  %7\n\t"                           \
+            "movq %%r10, %8\n\t"                           \
+            "movq %%r11, %9\n\t"                           \
+            "movq %%r12, %10\n\t"                          \
+            "movq %%r13, %11\n\t"                          \
+            "movq %%r14, %12\n\t"                          \
+            "movq %%r15, %13\n\t"                          \
+            : "=m"(gp_registers.rax),                      \
+              "=m"(gp_registers.rbx),                      \
+              "=m"(gp_registers.rcx),                      \
+              "=m"(gp_registers.rdx),                      \
+              "=m"(gp_registers.rsi),                      \
+              "=m"(gp_registers.rdi),                      \
+              "=m"(gp_registers.r8),                       \
+              "=m"(gp_registers.r9),                       \
+              "=m"(gp_registers.r10),                      \
+              "=m"(gp_registers.r11),                      \
+              "=m"(gp_registers.r12),                      \
+              "=m"(gp_registers.r13),                      \
+              "=m"(gp_registers.r14),                      \
+              "=m"(gp_registers.r15)                       \
+            :                                              \
+            : "memory");                                   \
+        __asm__ ("movq %%rsp, %0" : "=r"(tmp_rsp));        \
+        __asm__ ("movq %%rbp, %0" : "=r"(tmp_rbp));        \
+        gp_registers.rsp = tmp_rsp;                        \
+        gp_registers.rbp = tmp_rbp;                        \
+    } while (0)
+
+
+
 
 
 // ARM 32-bit

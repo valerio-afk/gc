@@ -20,7 +20,7 @@ The table below summarizes the operating systems and architectures on which this
 
 | OS / Architecture | x86 32-bit | x86 64-bit | ARM 32-bit | ARM 64-bit |
 |------------------|------------|------------|------------|------------|
-| Linux            | ❌         | ❌         | ✅         | ✅         |
+| Linux            | ✅         | ✅         | ✅         | ✅         |
 | macOS            | ❌         | ❌         | ❌         | ✅         |
 | Windows          | ❌         | ❌         | ❌         | ❌         |
 
@@ -88,10 +88,13 @@ The flag(s) used for the initialisation specify what memory areas the garbage co
 | `GC_SCAN_ALL_GLOBALS` | .data + .bss sections. |
 | `GC_SCAN_ALL_MEMORY` | Stack + heaps + global sections. |
 | `GC_SCAN_EVERYTHING` | All memory + registers. |
+| `GC_SCAN_ALL_MEMORY_EXCEPT_HEAPS` | Stack + global sections. |
+| `GC_SCAN_EVERYTHING_EXCEPT_HEAPS` | Similar to `GC_SCAN_EVERYTHING`, but heaps are not scanned |
 
 #### Notes
 * In most platforms, the stdlib of C may allocate other areas of the memory for the heap memory, especially when a lot of memory is requested. These memory areas are not contiguous to the heap memory initially allocated at the startup. For projects allocating a lot of memory in the heap, heap scanning can have a considerable overhead.
-* If you are compiling without optimisation (e.g. -O0), `GC_SCAN_ALL_MEMORY` is enough. If you compile with optimisations, it's better to use a more conservative approach and allow the garbage collector to scan the registers too with `GC_SCAN_EVERYTHING`. Optimised functions may not push all the local variables on the stack and the collector may free pointers prematurely, because they are not found on the stack.
+* If you are compiling without optimisation (e.g. -O0), `GC_SCAN_ALL_MEMORY` or `GC_SCAN_ALL_MEMORY_EXCEPT_HEAPS` is enough. If you compile with optimisations, it's better to use a more conservative approach and allow the garbage collector to scan the registers too with `GC_SCAN_EVERYTHING` or `GC_SCAN_EVERYTHING_EXCEPT_HEAPS`. Optimised functions may not push all the local variables on the stack and the collector may free pointers prematurely, because they are not found on the stack.
+* The GC scans only the allocated regions of the heap, even if `GC_SCAN_HEAPS` is not set. The scan is limited to the size of the allocations made via `gc_alloc`. Enabling `GC_SCAN_HEAPS` may prevent the collection of circular references, as objects in the heap may keep each other alive. For most applications, it is recommended to use either `GC_SCAN_ALL_MEMORY_EXCEPT_HEAPS` or `GC_SCAN_EVERYTHING_EXCEPT_HEAPS`.
 
 ### Function Reference
 

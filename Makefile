@@ -67,7 +67,7 @@ libgc.a: gc.o
 
 # Shared library
 libgc.so: gc.o
-	$(CC) -shared -o $@ $^
+	$(CC) $(CFLAGS) -shared -o $@ $^
 
 # Build gc_test executable linked against static library
 gc: gc_test.o libgc.a

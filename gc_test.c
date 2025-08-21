@@ -66,7 +66,7 @@ void test_longjmp(gc_state* state)
 int main()
 {
     #ifdef __OPTIMIZE__
-        gc_state* state = gc_init(GC_SCAN_EVERYTHING);
+        gc_state* state = gc_init(GC_SCAN_EVERYTHING_EXCEPT_HEAPS);
         printf("It appears you are compiling with -O1 or higher.\n");
         printf("CPU registers will be also scanned\n");
         printf("This is a conservatory approach\n");
@@ -75,7 +75,7 @@ int main()
         printf("To check if the test is working properly, compile without optimisation (-O0).\n");
         printf("This is not a bug. Some pointers may stay in any of the CPU registers for longer, so it may take more than one collection.\n\n");
     #else
-        gc_state* state = gc_init(GC_SCAN_ALL_MEMORY);
+        gc_state* state = gc_init(GC_SCAN_ALL_MEMORY_EXCEPT_HEAPS);
     #endif
 
     printf("Reachable on stack\n");
@@ -88,8 +88,6 @@ int main()
     ptr = NULL;
     gc_collect(state);
     printf("If sweeping appeared, all is good!\n");
-
-    
 
 
     printf("\nReachable on stack (testing gc_realloc)\n");
