@@ -87,6 +87,9 @@ typedef struct _gc_state
     void * stack_start; //address to the beginning of the stack
     memory_region data; //addresses of start/end of data section
     memory_region bss;  //addresses of start/end of bss section
+    #if defined(__APPLE__) && defined(__MACH__)
+        memory_region common; //sometimes uninitialised variables can end up in the common section (just for macOS)
+    #endif
     gc_entry* head;     //head of the linked list with allocated memory information
     size_t allocations; //number of total allocations
     size_t threshold;   //threshold of allocations to trigger gc_collect

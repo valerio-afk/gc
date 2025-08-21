@@ -82,6 +82,11 @@
         #define PROC_MAPS "/proc/self/maps"
 
     #elif defined(__APPLE__) && defined(__MACH__)
+        extern char __data_start;
+        extern char _edata;
+        extern char __bss_start;
+        extern char _end;
+
         #include <mach/mach.h>
         #include <mach/mach_vm.h>
         #include <mach-o/getsect.h>
@@ -183,6 +188,9 @@ gc_state* gc_init(uint8_t flags)
         state->stack_start = gc_stack_base();
         gc_data_section(&state->data.start, &state->data.end);
         gc_bss_section(&state->bss.start, &state->bss.end);
+        #if defined(__APPLE__) && defined(__MACH__)
+             _gc_macos_get_data_section("__common",&state->common.start,&state->common.end);
+        #endif
         state->head = NULL;
         state->threshold = GC_ALLOC_THRESHOLD;
         state->flags = flags;
@@ -347,7 +355,13 @@ void _gc_collect(gc_state*state)
     //scan .data section
     if ((state->flags & GC_SCAN_DATA_SECTION) != 0) gc_mark(state,state->data.start,state->data.end,false);
     //scan .bss section
-    if ((state->flags & GC_SCAN_BSS_SECTION) != 0) gc_mark(state,state->bss.start,state->bss.end,false);
+    if ((state->flags & GC_SCAN_BSS_SECTION) != 0)
+    {
+        gc_mark(state,state->bss.start,state->bss.end,false);
+        #if defined(__APPLE__) && defined(__MACH__)
+            gc_mark(state,state->common.start,state->common.end,false);
+        #endif
+    }
 
     //scan all the heaps
     if ((state->flags & GC_SCAN_HEAPS) != 0)
