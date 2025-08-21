@@ -82,11 +82,6 @@
         #define PROC_MAPS "/proc/self/maps"
 
     #elif defined(__APPLE__) && defined(__MACH__)
-        extern char __data_start;
-        extern char _edata;
-        extern char __bss_start;
-        extern char _end;
-
         #include <mach/mach.h>
         #include <mach/mach_vm.h>
         #include <mach-o/getsect.h>
