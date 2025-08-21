@@ -55,7 +55,7 @@ To include this garbage collector in your program, you need to:
 * Initialise the garbage collector (first thing in your main):
 
 ````c
-gc_state* state = gc_init(GC_SCAN_ALL_MEMORY);
+gc_state* state = gc_init(GC_SCAN_ALL_MEMORY_EXCEPT_HEAPS);
 
 ````
 
@@ -94,7 +94,7 @@ The flag(s) used for the initialisation specify what memory areas the garbage co
 #### Notes
 * In most platforms, the stdlib of C may allocate other areas of the memory for the heap memory, especially when a lot of memory is requested. These memory areas are not contiguous to the heap memory initially allocated at the startup. For projects allocating a lot of memory in the heap, heap scanning can have a considerable overhead.
 * If you are compiling without optimisation (e.g. -O0), `GC_SCAN_ALL_MEMORY` or `GC_SCAN_ALL_MEMORY_EXCEPT_HEAPS` is enough. If you compile with optimisations, it's better to use a more conservative approach and allow the garbage collector to scan the registers too with `GC_SCAN_EVERYTHING` or `GC_SCAN_EVERYTHING_EXCEPT_HEAPS`. Optimised functions may not push all the local variables on the stack and the collector may free pointers prematurely, because they are not found on the stack.
-* The GC scans only the allocated regions of the heap, even if `GC_SCAN_HEAPS` is not set. The scan is limited to the size of the allocations made via `gc_alloc`. Enabling `GC_SCAN_HEAPS` may prevent the collection of circular references, as objects in the heap may keep each other alive. For most applications, it is recommended to use either `GC_SCAN_ALL_MEMORY_EXCEPT_HEAPS` or `GC_SCAN_EVERYTHING_EXCEPT_HEAPS`.
+* The GC scans only the allocated regions of the heap, even if `GC_SCAN_HEAPS` is not set. The scan is limited to the size of the allocations made via `gc_alloc`. Enabling `GC_SCAN_HEAPS` may prevent the collection of circular references, as objects in the heap may keep each other alive. For most applications, it is recommended to use either `GC_SCAN_ALL_MEMORY_EXCEPT_HEAPS` or `GC_SCAN_EVERYTHING_EXCEPT_HEAPS`. Furthermore, avoiding to scan the regions of the heap entirely leads also to a gain in performance.
 
 ### Function Reference
 
@@ -137,7 +137,7 @@ Below is a simple example showing how to include and use the garbage collector i
 
 int main() {
     // Initialize the GC to scan stack, heap, and globals
-    gc_state* state = gc_init(GC_SCAN_ALL_MEMORY);
+    gc_state* state = gc_init(GC_SCAN_ALL_MEMORY_EXCEPT_HEAPS);
 
     // Allocate some memory
     int* numbers = gc_alloc(state, 10 * sizeof(int), true);
